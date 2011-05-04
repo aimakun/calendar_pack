@@ -1,0 +1,14 @@
+; $Id: calendar_multiday.info,v 1.1.2.1 2010/11/28 23:31:28 karens Exp $
+name = Calendar Multiday
+description = "Use the calendar multiday display as an alternative to the standard display."
+dependencies[] = calendar
+dependencies[] = views
+core = 6.x
+package = Date/Time
+
+; Information added by drupal.org packaging script on 2010-11-30
+version = "6.x-2.x-dev"
+core = "6.x"
+project = "calendar"
+datestamp = "1291075676"
+

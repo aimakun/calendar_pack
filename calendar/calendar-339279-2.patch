@@ -1,0 +1,265 @@
+? calendar-339279-2.patch
+Index: jcalendar/jcalendar.js
+===================================================================
+RCS file: /cvs/drupal-contrib/contributions/modules/calendar/jcalendar/Attic/jcalendar.js,v
+retrieving revision 1.1.4.9
+diff -u -p -r1.1.4.9 jcalendar.js
+--- jcalendar/jcalendar.js	12 Feb 2009 16:04:11 -0000	1.1.4.9
++++ jcalendar/jcalendar.js	3 Aug 2009 04:12:13 -0000
+@@ -1,81 +1,79 @@
+-if (Drupal.jsEnabled) {
+-  $(document).ready(function() {
+-    // I am assuming that all of the links are refering to an internal node
+-    
+-    // add the attribute rel=facebox to all of the links I want to have a popup
+-    $('div.view-field > a').attr('class', 'popup');
+-   
+-    // on click of a link
+-    $('a.popup').click(function(a) {
++Drupal.behaviors.CalendarJCalendar = function() {
++  // I am assuming that all of the links are refering to an internal node
++  
++  // add the attribute rel=facebox to all of the links I want to have a popup
++  $('div.view-field > a').attr('class', 'popup');
++ 
++  // on click of a link
++  $('a.popup').click(function(a) {
++  
++    // Make sure that other stuff is closed. This seems to cause a problem in Fx2 and IE7.
++    $('div#calpopup').fadeOut();
++    $('div#calpopup').remove();
+     
+-      // Make sure that other stuff is closed. This seems to cause a problem in Fx2 and IE7.
+-      $('div#calpopup').fadeOut();
+-      $('div#calpopup').remove();
+-      
+-      // create div to hold data and add it to the end of the body
+-      var div = $('<div id="calpopup"><div id="popup-close"><img id="popup-close-img" src="' + var_path + '/images/cross.png" /></div><div id="calpopup-body"><img src="' + var_path + '/images/throbber.gif" id="popthrobber" /></div></div>').attr('style','display: none');
+-      div.appendTo(document.body);
+-      
+-      // Locate Popup
+-      var offset = $(this).offset();
+-      // Check position with window width.
+-      var offset_left = offset.left + 5;
+-      if ($(window).width() < $('#calpopup').width() + offset.left) {
+-        offset_left -= $('#calpopup').width() + 5;
+-        if (offset_left < 0) {
+-          offset_left = 0;
+-        }
++    // create div to hold data and add it to the end of the body
++    var div = $('<div id="calpopup"><div id="popup-close"><img id="popup-close-img" src="' + var_path + '/images/cross.png" /></div><div id="calpopup-body"><img src="' + var_path + '/images/throbber.gif" id="popthrobber" /></div></div>').attr('style','display: none');
++    div.appendTo(document.body);
++    
++    // Locate Popup
++    var offset = $(this).offset();
++    // Check position with window width.
++    var offset_left = offset.left + 5;
++    if ($(window).width() < $('#calpopup').width() + offset.left) {
++      offset_left -= $('#calpopup').width() + 5;
++      if (offset_left < 0) {
++        offset_left = 0;
+       }
+-      var offset_top = offset.top + 25;
+-      if ($(window).height() < $('#calpopup').height() + offset_top) {
+-        offset_top -= $('#calpopup').height() + 25;
+-	      if (offset_top < 0) {
+-          offset_top = 0;
+-        }
++    }
++    var offset_top = offset.top + 25;
++    if ($(window).height() < $('#calpopup').height() + offset_top) {
++      offset_top -= $('#calpopup').height() + 25;
++      if (offset_top < 0) {
++        offset_top = 0;
+       }
+-      $('#calpopup').css('left', offset_left);
+-      $('#calpopup').css('top', offset_top);
+-      
+-      // Show Popup
+-      $('#calpopup').fadeIn('slow');
+-      
+-      // If sucessful call this
+-      function domCallback(msg) {
+-        $('#calpopup-body').html(msg);
++    }
++    $('#calpopup').css('left', offset_left);
++    $('#calpopup').css('top', offset_top);
++    
++    // Show Popup
++    $('#calpopup').fadeIn('slow');
++    
++    // If sucessful call this
++    function domCallback(msg) {
++      $('#calpopup-body').html(msg);
++    }
++    
++    // Get NodeID and ItemID
++    var ids = $(this).parent().parent().attr('id');
++    var arr = ids.split(":");
++    var nid = arr[1];
++    var id = arr[4];
++          
++    // fill the div with data
++    $.ajax({
++      type: "GET",
++      url: var_base_path + "?q=jcalendar/getnode/"+nid+"/"+ids,
++      success: function(msg){
++        domCallback(msg);
+       }
+-      
+-      // Get NodeID and ItemID
+-      var ids = $(this).parent().parent().attr('id');
+-      var arr = ids.split(":");
+-      var nid = arr[1];
+-      var id = arr[4];
+-            
+-      // fill the div with data
+-      $.ajax({
+-        type: "GET",
+-        url: var_base_path + "?q=jcalendar/getnode/"+nid+"/"+ids,
+-        success: function(msg){
+-          domCallback(msg);
+-        }
+-      });
+-      
+-      // On click of the close image
+-      $('img#popup-close-img').click(function(x) {
++    });
++    
++    // On click of the close image
++    $('img#popup-close-img').click(function(x) {
++      $('div#calpopup').fadeOut();
++      $('div#calpopup').remove();
++    });
++    
++    $(document).click(function(y) {
++      var $tgt = $(y.target);
++      if (!$tgt.parents().is('div#calpopup')) {
+         $('div#calpopup').fadeOut();
+         $('div#calpopup').remove();
+-      });
+-      
+-      $(document).click(function(y) {
+-        var $tgt = $(y.target);
+-        if (!$tgt.parents().is('div#calpopup')) {
+-          $('div#calpopup').fadeOut();
+-          $('div#calpopup').remove();
+-          $(document).unbind("click");
+-        }
+-      });
+-      
+-      // Don't Follow the real link
+-      return false;
++        $(document).unbind("click");
++      }
+     });
++    
++    // Don't Follow the real link
++    return false;
+   });
+ }
+\ No newline at end of file
+Index: js/ajax_calendar_views.js
+===================================================================
+RCS file: js/ajax_calendar_views.js
+diff -N js/ajax_calendar_views.js
+--- /dev/null	1 Jan 1970 00:00:00 -0000
++++ js/ajax_calendar_views.js	3 Aug 2009 04:12:13 -0000
+@@ -0,0 +1,77 @@
++/**
++ * @file ajax_calendar_views.js
++ *
++ * Handles AJAX fetching of calendar views, including filter submission and response.
++ */
++ 
++/**
++ * Ajax behavior for calendar views - based on ajax_views.js
++ */
++Drupal.behaviors.CalendarViewsAjaxView = function() {
++  if (Drupal.settings && Drupal.settings.views && Drupal.settings.views.ajaxViews) {
++    var ajax_path = Drupal.settings.views.ajax_path;
++    // If there are multiple views this might've ended up showing up multiple times.
++    if (ajax_path.constructor.toString().indexOf("Array") != -1) {
++      ajax_path = ajax_path[0];
++    }
++    $.each(Drupal.settings.views.ajaxViews, function(i, settings) {
++      var view = '.view-dom-id-' + settings.view_dom_id;
++      if (!$(view).size()) {
++        // Backward compatibility: if 'views-view.tpl.php' is old and doesn't
++        // contain the 'view-dom-id-#' class, we fall back to the old way of
++        // locating the view:
++        view = '.view-id-' + settings.view_name + '.view-display-id-' + settings.view_display_id;
++      }
++
++      $(view).filter(':not(.calendar-views-processed)')
++        // Don't attach to nested views. Doing so would attach multiple behaviors
++        // to a given element.
++        .filter(function() {
++          // If there is at least one parent with a view class, this view
++          // is nested (e.g., an attachment). Bail.
++          return !$(this).parents('.view').size();
++        })
++        .each(function() {
++          // Set a reference that will work in subsequent calls.
++          var target = this;
++          $(this)
++            .addClass('calendar-views-processed')
++            // Process pager, tablesort, and summary links.
++            .find('.calendar-calendar > .date-nav > .date-next a, .calendar-calendar > .date-nav > .date-prev a')
++            .each(function () {
++              var viewData = {};
++              // Construct an object using the settings defaults and then overriding
++              // with data specific to the link.
++              $.extend(
++                viewData,
++                settings,
++                Drupal.Views.parseQueryString($(this).attr('href')),
++                // Extract argument data from the URL.
++                Drupal.Views.parseViewArgs($(this).attr('href'), settings.view_base_path)
++              );
++              $(this).click(function () {
++                $(this).addClass('views-throbbing');
++                $.ajax({
++                  url: ajax_path,
++                  type: 'GET',
++                  data: viewData,
++                  success: function(response) {
++                    $(this).removeClass('views-throbbing');
++                    // Call all callbacks.
++                    if (response.__callbacks) {
++                      $.each(response.__callbacks, function(i, callback) {
++                        eval(callback)(target, response);
++                      });
++                    }
++                  },
++                  error: function() { $(this).removeClass('views-throbbing'); alert(Drupal.t("An error occurred at @path.", {'@path': ajax_path})); },
++                  dataType: 'json'
++                });
++
++                return false;
++              });
++            }); // .each function () {
++      }); // $view.filter().each
++    }); // .each Drupal.settings.views.ajaxViews
++  } // if
++};
+Index: theme/theme.inc
+===================================================================
+RCS file: /cvs/drupal-contrib/contributions/modules/calendar/theme/Attic/theme.inc,v
+retrieving revision 1.10.2.72
+diff -u -p -r1.10.2.72 theme.inc
+--- theme/theme.inc	2 Jul 2009 14:42:08 -0000	1.10.2.72
++++ theme/theme.inc	3 Aug 2009 04:12:14 -0000
+@@ -67,6 +67,12 @@ function template_preprocess_calendar_ma
+   $vars['block'] = !empty($view->date_info->block);
+   $vars['block_identifier'] = date_block_identifier($view);
+     
++  // If using AJAX, send identifying data about this view.
++  if ($view->use_ajax && !variable_get('views_no_javascript', FALSE)) {
++    views_add_js('ajax_view');
++    drupal_add_js(drupal_get_path('module', 'calendar') . "/js/ajax_calendar_views.js");
++  }
++    
+ }
+ 
+ /**

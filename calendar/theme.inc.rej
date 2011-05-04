@@ -1,0 +1,55 @@
+--- theme.inc	25 Nov 2010 11:44:52 -0000	1.10.2.79
++++ theme.inc	26 Nov 2010 10:45:33 -0000
+@@ -31,16 +31,16 @@
+   $calendar_links = array();
+   $base = array('attributes' => array('rel' => 'nofollow'));
+   if (!empty($displays['year'])) {
+-    $calendar_links['calendar calendar-year'] = $base + array('title' => date_t('Year', 'datetime'), 'href' => date_real_url($view, 'year'));
++    $calendar_links['calendar calendar-year'] = $base + array('title' => date_t('Year', 'datetime'), 'href' => date_real_url($view, 'year', NULL, TRUE));
+   }
+   if (!empty($displays['month'])) {
+-    $calendar_links['calendar calendar-month'] = $base + array('title' => date_t('Month', 'datetime'), 'href' => date_real_url($view, 'month'));
++    $calendar_links['calendar calendar-month'] = $base + array('title' => date_t('Month', 'datetime'), 'href' => date_real_url($view, 'month', NULL, TRUE));
+   }
+   if (!empty($displays['week'])) {
+-    $calendar_links['calendar calendar-week'] = $base + array('title' => date_t('Week', 'datetime'), 'href' => date_real_url($view, 'week'));
++    $calendar_links['calendar calendar-week'] = $base + array('title' => date_t('Week', 'datetime'), 'href' => date_real_url($view, 'week', NULL, TRUE));
+   }
+   if (!empty($displays['day'])) {
+-    $calendar_links['calendar calendar-day'] = $base + array('title' => date_t('Day', 'datetime'), 'href' => date_real_url($view, 'day'));
++    $calendar_links['calendar calendar-day'] = $base + array('title' => date_t('Day', 'datetime'), 'href' => date_real_url($view, 'day', NULL, TRUE));
+   }
+   $vars['calendar_links'] = $calendar_links;
+     
+@@ -153,6 +153,12 @@
+   $vars['view'] = $view;  
+   $vars['mini'] = !empty($view->date_info->mini);
+   $vars['block'] = !empty($view->date_info->block);
++
++  // AJAX calendars add calendar_ajax.js and views name
++  if ($view->style_plugin->view->use_ajax) {
++    drupal_add_js(drupal_get_path('module', 'calendar') .'/js/calendar_ajax.js');
++    drupal_add_js(array('calendar_ajax' => array( $view->style_plugin->view->name => 'ajax_calendar')), 'setting');
++  }
+ }
+ 
+ /**
+@@ -250,7 +256,7 @@
+     $view->date_info->mini = TRUE;
+     $view->date_info->hide_nav = TRUE;
+     $view->date_info->show_title = TRUE;
+-    $view->date_info->url = date_real_url($view, NULL, date_pad($year, 4) .'-'. date_pad($month));
++    $view->date_info->url = date_real_url($view, NULL, date_pad($year, 4) .'-'. date_pad($month),TRUE);
+     $view->date_info->min_date = date_make_date($view->date_info->year .'-'. date_pad($month) .'-01 00:00:00', date_default_timezone_name());
+     $view->date_info->max_date = drupal_clone($view->date_info->min_date);
+     date_modify($view->date_info->max_date, '+1 month');
+@@ -510,7 +516,8 @@
+   $view = $vars['view'];
+   
+   $vars['day'] = intval(substr($date, 8, 2));
+-  $force_view_url = !empty($view->date_info->block) ? TRUE : FALSE;
++  //$force_view_url = !empty($view->date_info->block) ? TRUE : FALSE;
++  $force_view_url = TRUE;
+   $vars['url'] = date_real_url($view, NULL, $date, $force_view_url);
+   $vars['link'] = !empty($view->date_info->display_types['day']) ? l($vars['day'], $vars['url']) : $vars['day'];
+   $vars['granularity'] = $view->date_info->granularity;

@@ -1,0 +1,3 @@
+Note:
+- Replace existing modules (contribute version) are required.
+- The qtip module require qtip library, place it in sites/all/libraries before use.
